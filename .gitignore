@@ -8,3 +8,8 @@ coverage.xml
 htmlcov/
 models/
 metrics.json
+
+# Personal study material kept in docs/ but out of git (slides, guides, downloads)
+docs/*.pptx
+docs/*.docx
+docs/*.crdownload
