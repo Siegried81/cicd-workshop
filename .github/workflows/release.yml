@@ -1,0 +1,43 @@
+name: Release
+
+# A versioned release is cut by pushing a tag like v0.1.0.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write   # needed to create the GitHub Release
+
+jobs:
+  # Re-check everything on the exact tagged commit: never release what CI never saw.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[serve,dev]"
+      - run: pytest
+      - run: python -m churn_workshop.train
+      - run: python scripts/check_metrics.py metrics.json --min-auc 0.70
+
+  deploy-staging:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: staging          # no rules: deploys automatically
+    steps:
+      - run: echo "Deploying ${{ github.ref_name }} to STAGING (replace with a real deploy step)"
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production       # <- pauses here until a required reviewer approves
+    steps:
+      - run: echo "Deploying ${{ github.ref_name }} to PRODUCTION"
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        run: gh release create "${{ github.ref_name }}" --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
