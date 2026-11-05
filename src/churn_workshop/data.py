@@ -64,6 +64,9 @@ def validate_data(df: pd.DataFrame) -> pd.DataFrame:
     if (df["monthly_charges"] <= 0).any():
         raise DataValidationError("monthly_charges must be > 0")
 
+    if (df["support_tickets"] < 0).any():
+        raise DataValidationError("support_tickets must be >= 0")
+
     if not set(df["contract"].unique()) <= set(CONTRACTS):
         raise DataValidationError(f"contract must be one of {CONTRACTS}")
 
