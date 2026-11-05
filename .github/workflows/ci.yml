@@ -50,3 +50,15 @@ jobs:
         with:
           name: coverage-report
           path: coverage.xml
+
+  # One required check with a stable name. It is green only when lint and every
+  # matrix test leg are green, so branch protection can require "ci-ok" and never
+  # has to track the per-version check names (test (3.10), test (3.11)...).
+  ci-ok:
+    needs: [lint, test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [ "${{ needs.lint.result }}" = "success" ] \
+          && [ "${{ needs.test.result }}" = "success" ] || exit 1
