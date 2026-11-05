@@ -1,0 +1,47 @@
+name: Model quality gate
+
+# Only run when something that can change the model changes.
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - "pyproject.toml"
+
+permissions:
+  contents: read
+
+jobs:
+  train-and-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e .
+
+      - name: Train model
+        run: python -m churn_workshop.train --out models/model.joblib --metrics metrics.json
+
+      - name: Show metrics in the run summary
+        run: |
+          echo "### Model metrics" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat metrics.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      # Gate BEFORE upload: if the model is too weak we fail the PR and never
+      # publish a bad artifact.
+      - name: Quality gate (fails the PR if AUC is too low)
+        run: python scripts/check_metrics.py metrics.json --min-auc 0.70
+
+      # Version the artifact by commit SHA so a model is always traceable to
+      # the exact code that produced it.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model-${{ github.sha }}
+          path: |
+            models/model.joblib
+            metrics.json
