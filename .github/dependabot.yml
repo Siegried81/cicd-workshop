@@ -1,10 +1,23 @@
+# Each ecosystem gets one grouped PR instead of one PR per package.
 version: 2
 updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
+    # No update-types filter on purpose. pyproject.toml declares floors
+    # (`>=`), so Dependabot has no current version to compare against and
+    # cannot tell a major from a patch. A group filtered on update-types
+    # would match nothing and every bump would fall back to its own PR.
+    groups:
+      python-deps:
+        patterns: ["*"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    # One group for all actions: their majors rarely touch application code,
+    # so splitting them out would only add PRs to review.
+    groups:
+      actions:
+        patterns: ["*"]
