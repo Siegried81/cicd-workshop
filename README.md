@@ -5,7 +5,7 @@ In this workshop, you will **fork this repo** and build a real CI/CD pipeline ar
 (data validation → training → quality gate → Docker image → gated deployment).
 No cloud account needed, only a free GitHub account.
 
-You can find the most update slides: [CI/CD Worshop 2026](https://docs.google.com/presentation/d/1vL3XFQwlAnl-TT3MHyd8Zzo2E3H-JKcY/edit?usp=sharing&rtpof=true&sd=true)
+The latest slides: [CI/CD Workshop 2026](https://docs.google.com/presentation/d/1vL3XFQwlAnl-TT3MHyd8Zzo2E3H-JKcY/edit?usp=sharing&rtpof=true&sd=true)
 
 ## What you'll learn
 
@@ -39,7 +39,11 @@ In this workshop, while the structure of the repo looks complicated, organizing 
 ├── .gitignore                    Ignores caches, venvs, trained models, metrics.json
 ├── .pre-commit-config.yaml       Local git hooks (ruff, whitespace, YAML checks)
 ├── .github/
-│   ├── workflows/ci.yml          STARTER workflow: you extend this in the exercises
+│   ├── workflows/
+│   │   ├── ci.yml                STARTER workflow: you extend this in the exercises
+│   │   ├── model.yml             Model quality gate on PRs that touch the model
+│   │   ├── docker.yml            Builds and publishes the image on main and on tags
+│   │   └── release.yml           Cuts a release when a v* tag is pushed
 │   └── dependabot.yml            Weekly dependency update PRs (pip + GitHub Actions)
 ├── src/churn_workshop/           The Python package (the "application")
 │   ├── __init__.py
@@ -55,8 +59,7 @@ In this workshop, while the structure of the repo looks complicated, organizing 
 │   ├── test_train.py
 │   └── test_api.py
 ├── docs/                         Workshop material (theory, exercises, cheat sheet)
-├── solutions/                    Reference workflows for each exercise
-└── slides/                       Editable PowerPoint deck for the presenter
+└── solutions/                    Reference workflows for each exercise
 ```
 
 Files generated at runtime (`models/model.joblib`, `metrics.json`, `coverage.xml`) are git-ignored.
